@@ -5,13 +5,16 @@
 BN_CTX *ctx;
 
 /* print utils --------------------------------------------------------------*/
+
+/* print a big num */
 void printBN(char *msg, BIGNUM * a)
 {
   char * number_str = BN_bn2hex(a);
-  printf("%s %s\n", msg, number_str);
+  printf("%s%s\n", msg, number_str);
   OPENSSL_free(number_str);
 }
 
+/* print the components of a key*/
 void print_key(char *msg, rsa_key_t *k)
 {
   char *mod = BN_bn2hex(k->mod);
@@ -23,6 +26,7 @@ void print_key(char *msg, rsa_key_t *k)
   OPENSSL_free(exp);
 }
 
+/* print a err string from openssl lib */
 void print_ssl_err() {
   char err_string[256];
   unsigned long err_code;
@@ -35,13 +39,14 @@ void print_ssl_err() {
   return;
 }
 
+/* print ascii from hexadecimal string */
 void print_ascii_from_hex(char *fmt, char *hex) {
     size_t len = strlen(hex);
     size_t byte_len = len / 2;
-    unsigned char *bytes = malloc(byte_len + 1); // +1 for null terminator
+    unsigned char *bytes = malloc(byte_len + 1);
 
     for (size_t i = 0; i < byte_len; i++) 
-        sscanf(hex + 2*i, "%2hhx", &bytes[i]);
+        sscanf(hex + 2*i, "%2hhx", &bytes[i]); // hh is for some size bs
     bytes[byte_len] = '\0'; 
 
     printf(fmt, (char*)bytes);
@@ -49,7 +54,7 @@ void print_ascii_from_hex(char *fmt, char *hex) {
     free(bytes);
 }
 
-/* --------------------------------------------------------------------------*/
+/* intialization ------------------------------------------------------------*/
 
 int init_rsa () {
   errno = 0;
@@ -82,7 +87,23 @@ void free_key_pair(key_pair_t *kp) {
   return;
 }
 
-/* math ---------------------------------------------------------------------*/
+/* helpers ------------------------------------------------------------------*/
+
+char *ascii2hex(char *msg) {
+  errno = 0;
+  size_t len = strlen(msg);
+  char *hex = calloc(2 * len, sizeof * hex);
+
+  if (!hex) return NULL;
+ 
+  for (size_t i = 0; i < len; i++) {
+    sprintf(hex+2*i, "%02x", msg[i]);
+  }
+
+  return hex;
+}
+
+/* keys ---------------------------------------------------------------------*/
 
 static BIGNUM *compute_phi_from_factors(BIGNUM *p, BIGNUM *q) {
   errno = 0;
@@ -170,16 +191,16 @@ key_pair_t *create_key_pair(BIGNUM *mod, BIGNUM *enc, BIGNUM *dec) {
 }
 
 key_pair_t *hex_create_key_pair(char *mod_hex, char *enc_hex, char *dec_hex) {
-  BIGNUM *mod, *enc, *dec;
+  BIGNUM *mod = NULL, *enc = NULL, *dec = NULL;
   key_pair_t *kp;
 
   if (!(mod = BN_new())) goto err_mod;
   if (!(enc = BN_new())) goto err_enc;
   if (!(dec = BN_new())) goto err_dec;
 
-  if (!BN_hex2bn(&mod, mod_hex)) goto err_conv;
-  if (!BN_hex2bn(&enc, enc_hex)) goto err_conv;
-  if (!BN_hex2bn(&dec, dec_hex)) goto err_conv;
+  if (mod_hex && !BN_hex2bn(&mod, mod_hex)) goto err_conv;
+  if (enc_hex && !BN_hex2bn(&enc, enc_hex)) goto err_conv;
+  if (dec_hex && !BN_hex2bn(&dec, dec_hex)) goto err_conv;
 
   if (!(kp = create_key_pair(mod, enc, dec))) goto err_kp;
 
@@ -196,19 +217,7 @@ err_mod:
   return NULL;
 }
 
-char *ascii2hex(char *msg) {
-  errno = 0;
-  size_t len = strlen(msg);
-  char *hex = calloc(2 * len, sizeof * hex);
-
-  if (!hex) return NULL;
- 
-  for (size_t i = 0; i < len; i++) {
-    sprintf(hex+2*i, "%02x", msg[i]);
-  }
-
-  return hex;
-}
+/* rsa ----------------------------------------------------------------------*/
 
 static inline BIGNUM *rsa(rsa_key_t *key, BIGNUM *text) {
   BIGNUM *res;
@@ -259,10 +268,6 @@ err_num:
   return NULL;
 }
 
-void hex2ascii(char *hex) {
-   
-}
-
 char *decrypt_hex(rsa_key_t *key, char *hex) {
   BIGNUM *plain, *cipher;
   char *plain_hex;
@@ -272,6 +277,7 @@ char *decrypt_hex(rsa_key_t *key, char *hex) {
   if (!(plain = decrypt (key, cipher))) goto free_cipher;
   if (!(plain_hex = BN_bn2hex(plain))) goto free_plain;
 
+  free(cipher);
   free(plain);
   return plain_hex;
 
