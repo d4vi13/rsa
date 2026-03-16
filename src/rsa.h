@@ -23,5 +23,11 @@ BIGNUM *compute_phi_from_factors(BIGNUM *p, BIGNUM *q);
 
 key_pair_t *derive_key_pair (BIGNUM *p, BIGNUM *q, BIGNUM *e);
 
+BIGNUM *encrypt_ascii(rsa_key_t *key, char *msg);
+
+BIGNUM *encrypt(rsa_key_t *key, BIGNUM *msg);
+
+BIGNUM *decrypt(rsa_key_t *key, BIGNUM *msg);
+
 void printBN(char *msg, BIGNUM * a);
 #endif

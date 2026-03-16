@@ -51,16 +51,17 @@ int main() {
   BN_hex2bn(&p, "F7E75FDC469067FFDC4E847C51F452DF");
   BN_hex2bn(&q, "E85CED54AF57E53E092113E62F436F4F");
   BN_hex2bn(&e, "0D88C3");
+  BN_hex2bn(&e, "010001");
 
   /*
+    BN_hex2bn(&p, "F7E75FDC469067FFDC4E847C51F452DE");
+  BN_hex2bn(&q, "");
+  BN_hex2bn(&e, "010001");
+  */
   BN_hex2bn(&p, "B");
   BN_hex2bn(&q, "D");
   BN_hex2bn(&e, "11");
 
-  BN_hex2bn(&p, "F7E75FDC469067FFDC4E847C51F452DE");
-  BN_hex2bn(&q, "");
-  BN_hex2bn(&e, "010001");
-  */
 
   phi = compute_phi_from_factors(p, q);
 
@@ -73,6 +74,17 @@ int main() {
   printBN("private exp ", kp->private_key.exp);
 
 
+  //BN_hex2bn(&kp->public_key.mod, "DCBFFE3E51F62E09CE7032E2677A78946A849DC4CDDE3A4D0CB81629242FB1A5");
+  BIGNUM *c = encrypt_ascii(&kp->public_key, "X");
+  /*BIGNUM *plain = BN_new();
+  BN_dec2bn(&plain, "88"); 
+  BIGNUM *c = encrypt(&kp->public_key, plain);
+  */
+
+  printBN("cipher ", c);
+
+  BIGNUM *d = decrypt(&kp->private_key, c);
+  printBN("plain ", d);
 
   return 0;
 }

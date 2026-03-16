@@ -12,6 +12,7 @@ void printBN(char *msg, BIGNUM * a)
 BN_CTX *ctx;
 
 int init_rsa () {
+  errno = 0;
   if (!(ctx = BN_CTX_new())) goto error;
 
   return 0;
@@ -91,3 +92,81 @@ err_failed_alloc:
   return NULL;
 }
 
+char *ascii2hex(char *msg) {
+  errno = 0;
+  size_t len = strlen(msg);
+  char *hex = calloc(2 * len, sizeof * hex);
+
+  if (!hex) return NULL;
+ 
+  for (size_t i = 0; i < len; i++) {
+    sprintf(hex+2*i, "%02x", msg[i]);
+  }
+
+  return hex;
+}
+
+static inline BIGNUM *rsa(rsa_key_t *key, BIGNUM *text) {
+  BIGNUM *res;
+
+  if (!(res = BN_new())) goto err;
+
+  if (BN_mod_exp(res, text, key->exp, key->mod, ctx))
+    return res;
+
+   BN_free(res);
+err:
+    return NULL;
+}
+
+BIGNUM *encrypt(rsa_key_t *key, BIGNUM *plain_text) {
+  return rsa(key, plain_text);
+}
+
+BIGNUM *decrypt(rsa_key_t *key, BIGNUM *cipher_text) {
+  return rsa(key, cipher_text);
+}
+
+BIGNUM *encrypt_ascii(rsa_key_t *key, char *msg) {
+  errno = 0;
+  char *hex;
+  BIGNUM *num, *cipher;
+
+  if (!(num = BN_new())) goto err_num;
+
+  if (!(hex = ascii2hex(msg))) {
+    perror("failed to convert ascii str to hex");
+    goto err_hex;
+  }
+
+  if (!BN_hex2bn(&num, hex)) goto err;
+  if (!(cipher = encrypt(key, num))) goto err;
+
+  free(hex);
+  return cipher;
+  
+err:
+  free(hex);
+err_hex:
+  BN_free(num);
+err_num:
+
+  perror("failed to encrypt asciit text");
+  return NULL;
+}
+
+void hex2ascii(char *hex) {
+   
+}
+
+BIGNUM *decrypt_hex(rsa_key_t *key, char *hex) {
+  BIGNUM *plain, *conv = BN_new();
+  char *plain_hex;
+
+  BN_hex2bn(&conv, hex);
+
+  plain = decrypt (key, conv);
+  plain_hex = BN_bn2hex(plain);
+
+
+}
