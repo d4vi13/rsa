@@ -5,6 +5,8 @@
 BN_CTX *ctx;
 
 /* print utils --------------------------------------------------------------*/
+
+/* print a big num */
 void printBN(char *msg, BIGNUM * a)
 {
   char * number_str = BN_bn2hex(a);
@@ -12,6 +14,7 @@ void printBN(char *msg, BIGNUM * a)
   OPENSSL_free(number_str);
 }
 
+/* print the components of a key*/
 void print_key(char *msg, rsa_key_t *k)
 {
   char *mod = BN_bn2hex(k->mod);
@@ -23,6 +26,7 @@ void print_key(char *msg, rsa_key_t *k)
   OPENSSL_free(exp);
 }
 
+/* print a err string from openssl lib */
 void print_ssl_err() {
   char err_string[256];
   unsigned long err_code;
@@ -35,6 +39,7 @@ void print_ssl_err() {
   return;
 }
 
+/* print ascii from hexadecimal string */
 void print_ascii_from_hex(char *fmt, char *hex) {
     size_t len = strlen(hex);
     size_t byte_len = len / 2;
@@ -49,7 +54,7 @@ void print_ascii_from_hex(char *fmt, char *hex) {
     free(bytes);
 }
 
-/* --------------------------------------------------------------------------*/
+/* intialization ------------------------------------------------------------*/
 
 int init_rsa () {
   errno = 0;
@@ -82,7 +87,23 @@ void free_key_pair(key_pair_t *kp) {
   return;
 }
 
-/* math ---------------------------------------------------------------------*/
+/* helpers ------------------------------------------------------------------*/
+
+char *ascii2hex(char *msg) {
+  errno = 0;
+  size_t len = strlen(msg);
+  char *hex = calloc(2 * len, sizeof * hex);
+
+  if (!hex) return NULL;
+ 
+  for (size_t i = 0; i < len; i++) {
+    sprintf(hex+2*i, "%02x", msg[i]);
+  }
+
+  return hex;
+}
+
+/* keys ---------------------------------------------------------------------*/
 
 static BIGNUM *compute_phi_from_factors(BIGNUM *p, BIGNUM *q) {
   errno = 0;
@@ -186,7 +207,6 @@ key_pair_t *hex_create_key_pair(char *mod_hex, char *enc_hex, char *dec_hex) {
   return kp;
 
 err_conv:
-  printf("%d\n", __LINE__);
 err_kp:
   free(dec);
 err_dec:
@@ -197,19 +217,7 @@ err_mod:
   return NULL;
 }
 
-char *ascii2hex(char *msg) {
-  errno = 0;
-  size_t len = strlen(msg);
-  char *hex = calloc(2 * len, sizeof * hex);
-
-  if (!hex) return NULL;
- 
-  for (size_t i = 0; i < len; i++) {
-    sprintf(hex+2*i, "%02x", msg[i]);
-  }
-
-  return hex;
-}
+/* rsa ----------------------------------------------------------------------*/
 
 static inline BIGNUM *rsa(rsa_key_t *key, BIGNUM *text) {
   BIGNUM *res;

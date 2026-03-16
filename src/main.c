@@ -1,41 +1,3 @@
-/*  
-#include <stdio.h>
-#include <openssl/bn.h>
-
-#define NBITS 256
-
-
-
-int main ()
-{
-
-  
-
-  BN_CTX *ctx = BN_CTX_new();
-
-  BIGNUM *a = BN_new();
-  BIGNUM *b = BN_new();
-  BIGNUM *n = BN_new();
-  BIGNUM *res = BN_new();
-
-
-  // Initialize a, b, n
-  BN_generate_prime_ex(a, NBITS, 1, NULL, NULL, NULL);
-  BN_dec2bn(&b, "273489463796838501848592769467194369268");
-  BN_rand(n, NBITS, 0, 0);
-
-  // res = a*b
-  BN_mul(res, a, b, ctx);
-  printBN("a * b = ", res);
-
-  // res = a^b mod n
-  BN_mod_exp(res, a, b, n, ctx);
-  printBN("a^c mod n = ", res);
-
-  return 0;
-}
-*/
-
 #include "rsa.h"
 #include "common.h"
 
@@ -66,7 +28,6 @@ err:
   return;
 }
 
-// TODO look for the 2 missing frees
 void task2() {
   /* Task 2: Encrytpting a Message */
   char M[] = "A top secret!";
@@ -88,7 +49,6 @@ err_create_key:
   return;
 }
 
-// TODO find 2 missing free (suspect lib)
 void task3() {
   /* Task 3: Decrypting a Message */
   char C[] = "8C0F971DF2F3672B28811407E2DABBE1DA0FEBBBDFC7DCB67396567EA1E2493F";
@@ -155,12 +115,14 @@ void task5() {
   printf("original=%s\n", M);
 
   printf("signature S=%s\n", S);
-  print_ascii_from_hex("dec(signature S)=%s\n", plain);
+  printf("hex dec(signature S)=0x%s\n", plain);
+  print_ascii_from_hex("plain dec(signature S)=%s\n", plain);
 
   if (!(plain = decrypt_hex(&kp->public_key, F))) goto err_enc;
 
   printf("signature F=%s\n", S);
-  print_ascii_from_hex("dec(signature F)=%s\n", plain);
+  printf("hex dec(signature S)=0x%s\n", plain);
+  printf("unable to print plain text, corrupts everything");
 
 
   free(plain);
