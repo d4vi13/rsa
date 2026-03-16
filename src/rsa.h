@@ -13,13 +13,17 @@ typedef struct {
   rsa_key_t public_key;
 } key_pair_t;
 
-struct context {
-  key_pair_t key_pair;
-};
+void print_key(char *msg, rsa_key_t *k);
+
+void printBN(char *msg, BIGNUM * a);
+
+void print_ascii_from_hex(char *fmt, char *hex);
 
 int init_rsa();
-BIGNUM *compute_phi_from_factors(BIGNUM *p, BIGNUM *q);
-// int generate_key_pair ();
+
+void finish_rsa();
+
+void free_key_pair(key_pair_t *kp);
 
 key_pair_t *derive_key_pair (BIGNUM *p, BIGNUM *q, BIGNUM *e);
 
@@ -29,5 +33,9 @@ BIGNUM *encrypt(rsa_key_t *key, BIGNUM *msg);
 
 BIGNUM *decrypt(rsa_key_t *key, BIGNUM *msg);
 
-void printBN(char *msg, BIGNUM * a);
+char *decrypt_hex(rsa_key_t *key, char *hex);
+
+key_pair_t *hex_create_key_pair(char *mod_hex, char *enc_hex, char *dec_hex);
+
+key_pair_t *create_key_pair(BIGNUM *mod, BIGNUM *enc, BIGNUM *dec);
 #endif

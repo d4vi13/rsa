@@ -39,11 +39,89 @@ int main ()
 #include "rsa.h"
 #include "common.h"
 
+void task1() {
+  /* Task 1: Deriving the Private Key */
+  key_pair_t *kp;
+  BIGNUM *p = BN_new();
+  BIGNUM *q = BN_new();
+  BIGNUM *e = BN_new();
+
+  BN_hex2bn(&p, "F7E75FDC469067FFDC4E847C51F452DF");
+  BN_hex2bn(&q, "E85CED54AF57E53E092113E62F436F4F");
+  BN_hex2bn(&e, "0D88C3");
+
+  if (!(kp = derive_key_pair(p, q, e))) {
+    perror("failed to derive key pair");
+    goto err;
+  }
+
+  print_key("public_key=", &kp->public_key);
+  print_key("private_key=", &kp->private_key);
+
+  free_key_pair(kp);
+err:
+  BN_free(p);
+  BN_free(q);
+  BN_free(e);
+  return;
+}
+
+// TODO look for the 2 missing frees
+void task2() {
+  /* Task 2: Encrytpting a Message */
+  char M[] = "A top secret!";
+  char n[] = "DCBFFE3E51F62E09CE7032E2677A78946A849DC4CDDE3A4D0CB81629242FB1A5";
+  char e[] = "010001";
+  char d[] = "74D806F9F3A62BAE331FFE3F0A68AFE35B3D2E4794148AACBC26AA381CD7D30D";
+  key_pair_t *kp;
+  BIGNUM *cipher;
+
+  if (!(kp = hex_create_key_pair(n, e, d))) goto err_create_key;
+  if (!(cipher = encrypt_ascii(&kp->public_key, M))) goto err_enc;
+
+  printBN("cipher=", cipher);
+
+  BN_free(cipher);
+err_enc:
+  free_key_pair(kp);
+err_create_key:
+  return;
+}
+
+void task3() {
+  /* Task 3: Decrypting a Message */
+  char C[] = "8C0F971DF2F3672B28811407E2DABBE1DA0FEBBBDFC7DCB67396567EA1E2493F";
+  char n[] = "DCBFFE3E51F62E09CE7032E2677A78946A849DC4CDDE3A4D0CB81629242FB1A5";
+  char e[] = "010001";
+  char d[] = "74D806F9F3A62BAE331FFE3F0A68AFE35B3D2E4794148AACBC26AA381CD7D30D";
+  key_pair_t *kp;
+  char *plain;
+
+  if (!(kp = hex_create_key_pair(n, e, d))) goto err_create_key;
+  if (!(plain = decrypt_hex(&kp->private_key, C))) goto err_dec;
+
+  print_ascii_from_hex("plain=%s\n", plain);
+
+  free(plain);
+err_dec:
+  free_key_pair(kp);
+err_create_key:
+  return;
+}
 
 int main() {
   BIGNUM *phi;
+
   init_rsa();
 
+  //task1();
+  //task2();
+  task3();
+
+  finish_rsa();
+
+  return 0;
+  
   BIGNUM *p = BN_new();
   BIGNUM *q = BN_new();
   BIGNUM *e = BN_new();
@@ -63,7 +141,6 @@ int main() {
   BN_hex2bn(&e, "11");
 
 
-  phi = compute_phi_from_factors(p, q);
 
   key_pair_t *kp = derive_key_pair(p, q, e); 
 
