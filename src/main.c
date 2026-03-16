@@ -39,13 +39,6 @@ int main ()
 #include "rsa.h"
 #include "common.h"
 
-void printBN(char *msg, BIGNUM * a)
-{
-   char * number_str = BN_bn2hex(a);
-   printf("%s %s\n", msg, number_str);
-   OPENSSL_free(number_str);
-}
-
 
 int main() {
   BIGNUM *phi;
@@ -55,19 +48,30 @@ int main() {
   BIGNUM *q = BN_new();
   BIGNUM *e = BN_new();
 
-  /*
   BN_hex2bn(&p, "F7E75FDC469067FFDC4E847C51F452DF");
   BN_hex2bn(&q, "E85CED54AF57E53E092113E62F436F4F");
   BN_hex2bn(&e, "0D88C3");
-  */
 
+  /*
   BN_hex2bn(&p, "B");
   BN_hex2bn(&q, "D");
   BN_hex2bn(&e, "11");
 
+  BN_hex2bn(&p, "F7E75FDC469067FFDC4E847C51F452DE");
+  BN_hex2bn(&q, "");
+  BN_hex2bn(&e, "010001");
+  */
+
   phi = compute_phi_from_factors(p, q);
 
+  key_pair_t *kp = derive_key_pair(p, q, e); 
+
   printBN("phi: ", phi);
+  printBN("public mod ", kp->public_key.mod);
+  printBN("public exp ", kp->public_key.exp);
+  printBN("private mod ", kp->private_key.mod);
+  printBN("private exp ", kp->private_key.exp);
+
 
 
   return 0;

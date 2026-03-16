@@ -21,6 +21,7 @@ int init_rsa();
 BIGNUM *compute_phi_from_factors(BIGNUM *p, BIGNUM *q);
 // int generate_key_pair ();
 
-// int derive_key_pair (BIGNUM *p, BIGNUM *q, BIGNUM *e);
+key_pair_t *derive_key_pair (BIGNUM *p, BIGNUM *q, BIGNUM *e);
 
+void printBN(char *msg, BIGNUM * a);
 #endif
