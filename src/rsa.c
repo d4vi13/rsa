@@ -8,7 +8,7 @@ BN_CTX *ctx;
 void printBN(char *msg, BIGNUM * a)
 {
   char * number_str = BN_bn2hex(a);
-  printf("%s %s\n", msg, number_str);
+  printf("%s%s\n", msg, number_str);
   OPENSSL_free(number_str);
 }
 
@@ -170,22 +170,23 @@ key_pair_t *create_key_pair(BIGNUM *mod, BIGNUM *enc, BIGNUM *dec) {
 }
 
 key_pair_t *hex_create_key_pair(char *mod_hex, char *enc_hex, char *dec_hex) {
-  BIGNUM *mod, *enc, *dec;
+  BIGNUM *mod = NULL, *enc = NULL, *dec = NULL;
   key_pair_t *kp;
 
   if (!(mod = BN_new())) goto err_mod;
   if (!(enc = BN_new())) goto err_enc;
   if (!(dec = BN_new())) goto err_dec;
 
-  if (!BN_hex2bn(&mod, mod_hex)) goto err_conv;
-  if (!BN_hex2bn(&enc, enc_hex)) goto err_conv;
-  if (!BN_hex2bn(&dec, dec_hex)) goto err_conv;
+  if (mod_hex && !BN_hex2bn(&mod, mod_hex)) goto err_conv;
+  if (enc_hex && !BN_hex2bn(&enc, enc_hex)) goto err_conv;
+  if (dec_hex && !BN_hex2bn(&dec, dec_hex)) goto err_conv;
 
   if (!(kp = create_key_pair(mod, enc, dec))) goto err_kp;
 
   return kp;
 
 err_conv:
+  printf("%d\n", __LINE__);
 err_kp:
   free(dec);
 err_dec:
@@ -268,6 +269,7 @@ char *decrypt_hex(rsa_key_t *key, char *hex) {
   if (!(plain = decrypt (key, cipher))) goto free_cipher;
   if (!(plain_hex = BN_bn2hex(plain))) goto free_plain;
 
+  free(cipher);
   free(plain);
   return plain_hex;
 
