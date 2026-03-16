@@ -38,10 +38,10 @@ void print_ssl_err() {
 void print_ascii_from_hex(char *fmt, char *hex) {
     size_t len = strlen(hex);
     size_t byte_len = len / 2;
-    unsigned char *bytes = malloc(byte_len + 1); // +1 for null terminator
+    unsigned char *bytes = malloc(byte_len + 1);
 
     for (size_t i = 0; i < byte_len; i++) 
-        sscanf(hex + 2*i, "%2hhx", &bytes[i]);
+        sscanf(hex + 2*i, "%2hhx", &bytes[i]); // hh is for some size bs
     bytes[byte_len] = '\0'; 
 
     printf(fmt, (char*)bytes);
@@ -257,10 +257,6 @@ err_num:
 
   perror("failed to encrypt asciit text");
   return NULL;
-}
-
-void hex2ascii(char *hex) {
-   
 }
 
 char *decrypt_hex(rsa_key_t *key, char *hex) {
